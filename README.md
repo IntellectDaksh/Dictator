@@ -14,6 +14,10 @@ focus. No cloud, no accounts, nothing leaves your PC.
 > polish and bug fixes are next — [open an issue](../../issues) if something
 > breaks or you want a feature.
 
+<!-- TODO: record a 10-15s GIF of hold-to-dictate in action (ScreenToGif or
+similar) and drop it here as demo.gif — biggest single upgrade this README
+is missing, screenshots undersell what this actually does. -->
+
 ## Install
 
 Requires [Python 3.11+](https://python.org) and, optionally, [Ollama](https://ollama.com/download)
