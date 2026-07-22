@@ -29,8 +29,9 @@ daily until it stopped breaking.
 
 ## Install
 
-Requires [Python 3.11+](https://python.org) and, optionally, [Ollama](https://ollama.com/download)
-for transcript cleanup.
+Requires [Git](https://git-scm.com/downloads) and [Python 3.11+](https://python.org),
+and optionally [Ollama](https://ollama.com/download) for transcript cleanup.
+`install.ps1` installs Git for you via `winget` if it's missing.
 
 ```powershell
 git clone https://github.com/IntellectDaksh/Dictator.git

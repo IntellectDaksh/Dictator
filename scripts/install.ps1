@@ -12,7 +12,24 @@ Set-Location $root
 
 Write-Host "== Dictator setup ==" -ForegroundColor Cyan
 
-# 1. Python -----------------------------------------------------------------
+# 1. Git ----------------------------------------------------------------------
+$git = Get-Command git -ErrorAction SilentlyContinue
+if (-not $git) {
+    Write-Host "Git not found. Installing via winget..." -ForegroundColor Yellow
+    $winget = Get-Command winget -ErrorAction SilentlyContinue
+    if (-not $winget) {
+        Write-Host "winget not found either. Install Git manually from https://git-scm.com/downloads, then re-run this script." -ForegroundColor Red
+        exit 1
+    }
+    winget install --id Git.Git -e --source winget --accept-package-agreements --accept-source-agreements
+    $git = Get-Command git -ErrorAction SilentlyContinue
+    if (-not $git) {
+        Write-Host "Git install finished but isn't on PATH yet - open a new terminal and re-run this script." -ForegroundColor Red
+        exit 1
+    }
+}
+
+# 2. Python -----------------------------------------------------------------
 $python = Get-Command python -ErrorAction SilentlyContinue
 if (-not $python) {
     Write-Host "Python not found." -ForegroundColor Red
@@ -20,7 +37,7 @@ if (-not $python) {
     exit 1
 }
 
-# 2. Virtual env + deps -------------------------------------------------------
+# 3. Virtual env + deps -------------------------------------------------------
 if (-not (Test-Path "$root\.venv")) {
     Write-Host "Creating virtual environment..."
     python -m venv "$root\.venv"
@@ -29,7 +46,7 @@ $venvPip = "$root\.venv\Scripts\pip.exe"
 Write-Host "Installing dependencies (first run downloads CUDA libraries, ~1.3 GB - can take a few minutes)..."
 & $venvPip install -q -r "$root\requirements.txt"
 
-# 3. Ollama + cleanup model ---------------------------------------------------
+# 4. Ollama + cleanup model ---------------------------------------------------
 $ollama = Get-Command ollama -ErrorAction SilentlyContinue
 if (-not $ollama) {
     Write-Host ""
@@ -68,7 +85,7 @@ if (-not $ollama) {
     }
 }
 
-# 4. Launch -------------------------------------------------------------------
+# 5. Launch -------------------------------------------------------------------
 Write-Host ""
 Write-Host "Setup done. Launching Dictator..." -ForegroundColor Green
 Start-Process "$root\Dictator.bat"
