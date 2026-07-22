@@ -1,0 +1,16 @@
+name: Feature request
+description: Suggest something Dictator doesn't do yet
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What's missing
+      description: What are you trying to do that the app doesn't support?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: How you'd expect it to work. Keep in mind this is a small solo-maintained tool — see CONTRIBUTING.md before large proposals.

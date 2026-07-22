@@ -1,6 +1,7 @@
 # Dictator
 
 ![CI](https://github.com/IntellectDaksh/Dictator/actions/workflows/ci.yml/badge.svg)
+![Release](https://img.shields.io/github/v/release/IntellectDaksh/Dictator)
 ![License](https://img.shields.io/badge/license-MIT%20%2B%20Commons%20Clause-blue)
 ![Platform](https://img.shields.io/badge/platform-Windows-informational)
 
@@ -17,6 +18,14 @@ focus. No cloud, no accounts, nothing leaves your PC.
 <!-- TODO: record a 10-15s GIF of hold-to-dictate in action (ScreenToGif or
 similar) and drop it here as demo.gif — biggest single upgrade this README
 is missing, screenshots undersell what this actually does. -->
+
+## Why this exists
+
+I dictate most of my own notes, DMs, and scripts for Uideas — typing is
+slower than talking, but every dictation tool I tried either shipped audio to
+a cloud API or left "um"s and false starts in the transcript. Built this to
+run fully local and clean up the mess a real voice makes, then kept using it
+daily until it stopped breaking.
 
 ## Install
 
@@ -86,3 +95,7 @@ setup. No telemetry, no accounts, no API keys.
 
 MIT + Commons Clause — free to use, modify, and share; not for resale. See
 [LICENSE](LICENSE).
+
+---
+
+[![Star History Chart](https://api.star-history.com/svg?repos=IntellectDaksh/Dictator&type=Date)](https://star-history.com/#IntellectDaksh/Dictator&Date)

@@ -1,0 +1,35 @@
+name: Bug report
+description: Something broke or behaved wrong
+labels: [bug]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you did, what you expected, what actually happened.
+    validations:
+      required: true
+  - type: input
+    id: windows-version
+    attributes:
+      label: Windows version
+      placeholder: "Windows 11 23H2"
+    validations:
+      required: true
+  - type: input
+    id: python-version
+    attributes:
+      label: Python version
+      placeholder: "3.12.1"
+    validations:
+      required: true
+  - type: textarea
+    id: config
+    attributes:
+      label: Relevant config.json values (if related to hotkeys, tone, or model settings)
+      render: json
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console output / traceback
+      render: shell
