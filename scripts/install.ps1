@@ -38,13 +38,21 @@ if (-not $python) {
 }
 
 # 3. Virtual env + deps -------------------------------------------------------
+$venvPip = "$root\.venv\Scripts\pip.exe"
+if ((Test-Path "$root\.venv") -and -not (Test-Path $venvPip)) {
+    Write-Host "Existing .venv is incomplete (no pip.exe) - recreating it." -ForegroundColor Yellow
+    Remove-Item -Recurse -Force "$root\.venv"
+}
 if (-not (Test-Path "$root\.venv")) {
     Write-Host "Creating virtual environment..."
     python -m venv "$root\.venv"
 }
-$venvPip = "$root\.venv\Scripts\pip.exe"
 Write-Host "Installing dependencies (first run downloads CUDA libraries, ~1.3 GB - can take a few minutes)..."
 & $venvPip install -q -r "$root\requirements.txt"
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Dependency install failed - see errors above." -ForegroundColor Red
+    exit 1
+}
 
 # 4. Ollama + cleanup model ---------------------------------------------------
 $ollama = Get-Command ollama -ErrorAction SilentlyContinue
