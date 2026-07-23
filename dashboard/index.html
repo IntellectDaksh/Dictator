@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dictator</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div id="app" class="hud-in">
+    <!-- hero -->
+    <div class="hero hud-panel">
+      <div>
+        <h1>Dictator</h1>
+        <div class="rule"></div>
+        <div class="sub">Hold Ctrl + Win to dictate. Double-tap for hands-free. Everything stays local.</div>
+      </div>
+      <div class="hud-badge"><span class="dot accent"></span>LOCAL</div>
+    </div>
+
+    <!-- stats -->
+    <div class="stat-grid hud-slide-up" id="stats">
+      <div class="stat-tile"><div class="val" data-stat="n">0</div><div class="cap">Dictations</div><svg class="spark" id="spark" viewBox="0 0 100 22" preserveAspectRatio="none"></svg></div>
+      <div class="stat-tile"><div class="val" data-stat="raw_w">0</div><div class="cap">Words spoken</div></div>
+      <div class="stat-tile"><div class="val" data-stat="cln_w">0</div><div class="cap">Words typed</div></div>
+      <div class="stat-tile"><div class="val" data-stat="wpm">0</div><div class="cap">Avg WPM</div></div>
+      <div class="stat-tile"><div class="val" data-stat="streak">0</div><div class="cap">Day streak</div></div>
+    </div>
+
+    <!-- main -->
+    <div class="grid">
+      <!-- recent -->
+      <div class="col hud-panel">
+        <div class="panel-hd">
+          <h2>Recent dictations</h2>
+          <div class="search-wrap">
+            <span class="hud-label">Search</span>
+            <input id="search" type="text" placeholder="filter…" />
+          </div>
+        </div>
+        <div class="hairline"></div>
+        <div class="scroll"><div class="rec" id="recent"></div></div>
+      </div>
+
+      <!-- controls -->
+      <div class="col hud-panel">
+        <div class="panel-hd">
+          <div>
+            <h2>Controls</h2>
+            <div class="desc">Everyday settings, kept within reach.</div>
+          </div>
+        </div>
+        <div class="hairline"></div>
+        <div class="scroll"><div class="controls" id="controls"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+  <script src="./app.js"></script>
+</body>
+</html>

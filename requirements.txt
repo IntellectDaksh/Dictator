@@ -7,3 +7,4 @@ nvidia-cudnn-cu12
 pyperclip
 pystray
 Pillow
+pywebview

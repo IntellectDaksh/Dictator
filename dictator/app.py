@@ -4,6 +4,8 @@ import json
 import os
 import queue
 import shutil
+import subprocess
+import sys
 import threading
 import time
 import tkinter as tk
@@ -17,7 +19,7 @@ import pystray
 import sounddevice as sd
 from PIL import Image, ImageDraw, ImageTk
 
-from .config import APP_DIR, CONFIG_PATH, load_config, save_config, history_path, folder_size, fmt_bytes
+from .config import APP_DIR, CONFIG_PATH, RUNTIME_PATH, load_config, save_config, history_path, folder_size, fmt_bytes
 from .history import log_history
 from .hotkeys import HOTKEY_PRESETS, hotkey_down, wait_keys_released, win_pressed
 from .injection import inject_text
@@ -58,22 +60,26 @@ class App:
         self._load_history()  # seed totals + recent list from past sessions
         self.ui_q = queue.Queue()  # marshals tray clicks onto the tk thread
 
-    # Keys safe to hot-swap without a restart — no model/thread/hotkey re-init
-    # needed to pick these up. Everything else (model_size, hotkey_mods, ...)
-    # still needs a restart, same as before.
-    HOT_RELOAD_KEYS = ("snippets", "vocabulary", "tone_overrides",
-                        "auto_punctuate", "review_before_typing")
+    # Keys the running app can adopt live from a config.json edit made by
+    # another process (the webview dashboard, or an external settings tool).
+    # Most just need self.cfg updated — the hotkey loop, mic capture and
+    # pipeline all read self.cfg fresh each time. model_size (whisper reload)
+    # and enabled (tray icon) get extra side effects in apply() below.
+    SYNC_KEYS = ("snippets", "vocabulary", "tone_overrides", "auto_punctuate",
+                 "review_before_typing", "hotkey_mods", "hotkey_mode",
+                 "input_device", "enabled", "log_history", "model_size",
+                 "history_dir", "show_status_bar", "theme", "accent_color",
+                 "auto_theme")
 
     def _watch_config_file(self):
         """Picks up config.json edits made by something other than this
-        process (e.g. an external settings tool writing the file directly)
-        without a restart. Comparing values instead of tracking "was this
-        our own write" means Dictator's own save_config() calls are
-        naturally a no-op here — the file already matches self.cfg for
-        these keys."""
+        process (the webview dashboard, or an external settings tool) without a
+        restart. Comparing values instead of tracking "was this our own write"
+        means Dictator's own save_config() calls are naturally a no-op here —
+        the file already matches self.cfg for these keys."""
         last_mtime = 0
         while True:
-            time.sleep(5)
+            time.sleep(2)
             try:
                 mtime = os.path.getmtime(CONFIG_PATH)
             except OSError:
@@ -86,13 +92,22 @@ class App:
                     disk_cfg = json.load(f)
             except (OSError, json.JSONDecodeError):
                 continue
-            changed = {k: disk_cfg[k] for k in self.HOT_RELOAD_KEYS
+            changed = {k: disk_cfg[k] for k in self.SYNC_KEYS
                        if k in disk_cfg and disk_cfg[k] != self.cfg.get(k)}
             if not changed:
                 continue
 
             def apply(changed=changed):
                 self.cfg.update(changed)
+                if "model_size" in changed:
+                    self._health_cache = (0.0, {})
+                    size = changed["model_size"]
+                    threading.Thread(
+                        target=lambda: (self.transcriber.reload(size), self._write_runtime()),
+                        daemon=True).start()
+                if "enabled" in changed:
+                    self._refresh_tray_icon()
+                self._write_runtime()
                 if getattr(self, "dash", None) and self.dash.winfo_exists():
                     self._dash_reopen()
             self.ui_q.put(apply)
@@ -104,6 +119,43 @@ class App:
         del self.session[:-100]  # cap memory, totals keep counting
         if getattr(self, "dash", None) and self.dash.winfo_exists():
             self._dash_refresh()
+
+    def _write_runtime(self):
+        """Mirror in-process live state to runtime.json for the separate-process
+        webview dashboard (health panel, copy-last, undo-last). Best-effort;
+        file-only, so safe to call from worker threads."""
+        try:
+            data = {"whisper_device": self.transcriber.device,
+                    "whisper_loaded": self.transcriber.model is not None,
+                    "enabled": self.cfg.get("enabled", True),
+                    "model_size": self.cfg.get("model_size"),
+                    "last_text": self.last_injected_text}
+            os.makedirs(APP_DIR, exist_ok=True)
+            with open(RUNTIME_PATH, "w", encoding="utf-8") as f:
+                json.dump(data, f)
+        except OSError:
+            pass
+
+    def launch_dashboard(self):
+        """Open the pywebview dashboard (dashboard/dashboard.py) as its own
+        process. Reuses an already-open one; falls back to the in-process Tk
+        dashboard if the launcher is missing or won't start."""
+        script = os.path.join(REPO_ROOT, "dashboard", "dashboard.py")
+        if os.path.exists(script):
+            proc = getattr(self, "_dash_proc", None)
+            if proc and proc.poll() is None:
+                return  # already open
+            scripts_pyw = os.path.join(sys.prefix, "Scripts", "pythonw.exe")
+            pythonw = scripts_pyw if os.path.exists(scripts_pyw) \
+                else os.path.join(sys.prefix, "pythonw.exe")
+            try:
+                self._write_runtime()  # make sure health/last-text are current
+                self._dash_proc = subprocess.Popen(
+                    [pythonw, script], cwd=os.path.dirname(script))
+                return
+            except OSError as e:
+                print(f"webview dashboard failed to launch ({e}); using Tk fallback")
+        self.ui_q.put(self.open_dashboard)
 
     def _tally(self, raw, cleaned, secs, t):
         self.totals["n"] += 1
@@ -279,6 +331,7 @@ class App:
                     pass
             inject_text(cleaned, self.cfg)
             self.last_injected_text = cleaned
+            self._write_runtime()  # refresh last_text for the dashboard's copy-last/undo
             now = datetime.now()
             log_history(self.cfg, raw, cleaned, secs)
             self.ui_q.put(lambda: self._record_dictation(raw, cleaned, secs, now))
@@ -1433,8 +1486,9 @@ class App:
                 return
             self.cfg["model_size"] = size
             save_config(self.cfg)
-            threading.Thread(target=self.transcriber.reload, args=(size,),
-                             daemon=True).start()
+            threading.Thread(
+                target=lambda: (self.transcriber.reload(size), self._write_runtime()),
+                daemon=True).start()
         return do
 
     def build_menu(self):
@@ -1452,7 +1506,7 @@ class App:
             for s in ("base.en", "small.en", "medium.en")]
         return pystray.Menu(
             pystray.MenuItem("Dashboard",
-                             lambda i, item: self.ui_q.put(self.open_dashboard),
+                             lambda i, item: self.launch_dashboard(),
                              default=True),
             pystray.MenuItem("Copy last dictation",
                              lambda i, item: self.ui_q.put(self._copy_last)),
@@ -1525,7 +1579,13 @@ class App:
             except OSError as e:
                 print(f"start-on-login refresh failed: {e}")
 
-        threading.Thread(target=self.transcriber.load, daemon=True).start()
+        self._write_runtime()  # publish "loading" state before the model is up
+
+        def _load_and_publish():
+            self.transcriber.load()
+            self._write_runtime()  # publish device + "ready" for the dashboard
+
+        threading.Thread(target=_load_and_publish, daemon=True).start()
         threading.Thread(target=self.hotkey_loop, daemon=True).start()
         threading.Thread(target=self._watch_config_file, daemon=True).start()
 

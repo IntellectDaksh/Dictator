@@ -4,6 +4,8 @@ import os
 
 APP_DIR = os.path.join(os.environ.get("APPDATA", "."), "Dictator")
 CONFIG_PATH = os.path.join(APP_DIR, "config.json")
+# live in-process state mirrored here for the separate-process webview dashboard
+RUNTIME_PATH = os.path.join(APP_DIR, "runtime.json")
 
 DEFAULTS = {
     "enabled": True,

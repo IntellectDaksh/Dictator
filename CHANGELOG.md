@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- New webview dashboard (`dashboard/`, `pywebview` + HTML/CSS/JS) as the
+  primary settings/stats UI, replacing the Tk dashboard (kept as a fallback).
+  Runs as its own process and syncs with the app through `config.json` /
+  `runtime.json` / `history.jsonl`.
+- `App` now mirrors live state to `runtime.json` and hot-applies a wider set of
+  config keys (model reload, enable/disable, theme) written by the dashboard.
+- Added `pywebview` to `requirements.txt`.
+
 ## 1.0.0 — 2026-07-22
 
 Initial public release.

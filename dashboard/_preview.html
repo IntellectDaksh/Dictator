@@ -1,0 +1,91 @@
+<!doctype html>
+<!-- Browser preview harness: mocks the pywebview bridge with sample data so the
+     dashboard UI can be opened in any browser (design iteration + screenshots).
+     Not used at runtime — dashboard.py serves the real index.html. -->
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <title>Dictator — preview</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div id="app" class="hud-in">
+    <div class="hero hud-panel">
+      <div>
+        <h1>Dictator</h1>
+        <div class="rule"></div>
+        <div class="sub">Hold Ctrl + Win to dictate. Double-tap for hands-free. Everything stays local.</div>
+      </div>
+      <div class="hud-badge"><span class="dot accent"></span>LOCAL</div>
+    </div>
+    <div class="stat-grid hud-slide-up" id="stats">
+      <div class="stat-tile"><div class="val" data-stat="n">0</div><div class="cap">Dictations</div><svg class="spark" id="spark" viewBox="0 0 100 22" preserveAspectRatio="none"></svg></div>
+      <div class="stat-tile"><div class="val" data-stat="raw_w">0</div><div class="cap">Words spoken</div></div>
+      <div class="stat-tile"><div class="val" data-stat="cln_w">0</div><div class="cap">Words typed</div></div>
+      <div class="stat-tile"><div class="val" data-stat="wpm">0</div><div class="cap">Avg WPM</div></div>
+      <div class="stat-tile"><div class="val" data-stat="streak">0</div><div class="cap">Day streak</div></div>
+    </div>
+    <div class="grid">
+      <div class="col hud-panel">
+        <div class="panel-hd">
+          <h2>Recent dictations</h2>
+          <div class="search-wrap"><span class="hud-label">Search</span><input id="search" type="text" placeholder="filter…" /></div>
+        </div>
+        <div class="hairline"></div>
+        <div class="scroll"><div class="rec" id="recent"></div></div>
+      </div>
+      <div class="col hud-panel">
+        <div class="panel-hd"><div><h2>Controls</h2><div class="desc">Everyday settings, kept within reach.</div></div></div>
+        <div class="hairline"></div>
+        <div class="scroll"><div class="controls" id="controls"></div></div>
+      </div>
+    </div>
+  </div>
+  <div id="toast"></div>
+
+  <script>
+    // ---- mock bridge ----
+    const CFG = {
+      enabled: true, model_size: "small.en", input_device: null,
+      log_history: true, history_dir: "C:\\Users\\DESK\\AppData\\Roaming\\Dictator",
+      vocabulary: ["Uideas", "Daksh", "VeeFly"], review_before_typing: false,
+      hotkey_mods: ["ctrl", "win"], hotkey_mode: "hold", theme: "dark",
+      accent_color: null, auto_punctuate: true, auto_theme: false,
+      tone_overrides: { casual: ["slack.exe"], formal: [], verbatim: ["code.exe"] },
+      snippets: { omw: "on my way", ttyl: "talk to you later" }, pinned: [],
+    };
+    const RECENT = [
+      { t: "2026-07-23T09:40", t_disp: "23 JUL · 09:40", cleaned: "Let's connect at 11pm to lock the edit.", pinned: true },
+      { t: "2026-07-23T08:12", t_disp: "23 JUL · 08:12", cleaned: "Send the revised proposal to Sarah, not John — and cc the whole team so nobody's left out of the loop this time.", pinned: false },
+      { t: "2026-07-22T23:04", t_disp: "22 JUL · 23:04", cleaned: "New paragraph. The motion pass is ready for review.", pinned: false },
+      { t: "2026-07-22T18:30", t_disp: "22 JUL · 18:30", cleaned: "Ship the reskin to the standalone dashboard tonight.", pinned: false },
+      { t: "2026-07-22T17:16", t_disp: "22 JUL · 17:16", cleaned: "Follow up with the restaurant prospect about the reel package.", pinned: false },
+    ];
+    const STATS = { n: 342, raw_w: 18492, cln_w: 16903, wpm: 138, streak: 8, spark: [3, 7, 4, 9, 6, 11, 8] };
+    const HEALTH = { enabled: "on", whisper: "small.en / CUDA", loaded: "ready", ollama: "qwen2.5:7b-instruct", mic: "System default", review: "off" };
+    const STORAGE = [
+      { name: "Whisper cache", size: "466.0 MB", files: 3 },
+      { name: "Ollama models", size: "4.7 GB", files: 11 },
+      { name: "Python env", size: "2.1 GB", files: 8420 },
+      { name: "History", size: "1.2 MB", files: 1 },
+    ];
+    const MICS = [{ name: "System default", index: null }, { name: "Yeti Stereo Microphone — WASAPI", index: 1 }, { name: "Headset Microphone — MME", index: 2 }];
+    const PRESETS = [["Ctrl + Win", ["ctrl", "win"]], ["Ctrl + Alt", ["ctrl", "alt"]], ["Ctrl + Shift", ["ctrl", "shift"]], ["Alt + Win", ["alt", "win"]]];
+    const noop = () => Promise.resolve(true);
+    window.pywebview = { api: {
+      get_state: () => Promise.resolve({ config: CFG, mics: MICS, hotkey_presets: PRESETS, stats: STATS, recent: RECENT, health: HEALTH, storage: STORAGE, history_path: CFG.history_dir + "\\history.jsonl" }),
+      get_live: () => Promise.resolve({ stats: STATS, recent: RECENT, health: HEALTH, storage: STORAGE }),
+      get_config: () => Promise.resolve(CFG),
+      set_config: (p) => { Object.assign(CFG, p); return Promise.resolve(true); },
+      search: (q) => Promise.resolve(RECENT.filter(r => r.cleaned.toLowerCase().includes(q))),
+      toggle_pin: noop, copy_text: noop, copy_last: noop, undo_last: noop, clean_clipboard: noop,
+      capture_hotkey: () => Promise.resolve(["ctrl", "alt"]), retry_health: noop,
+      confirm: () => Promise.resolve(true), clear_whisper_cache: noop, clear_ollama_models: noop,
+      open_folder: noop, pick_folder: () => Promise.resolve(null), export_history: () => Promise.resolve(342),
+      purge_history: noop, backup_settings: noop, restore_settings: noop,
+    } };
+  </script>
+  <script src="./app.js"></script>
+  <script>window.dispatchEvent(new Event("pywebviewready"));</script>
+</body>
+</html>
