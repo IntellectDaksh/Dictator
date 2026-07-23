@@ -2,7 +2,7 @@
 
 ![CI](https://github.com/IntellectDaksh/Dictator/actions/workflows/ci.yml/badge.svg)
 ![Release](https://img.shields.io/github/v/release/IntellectDaksh/Dictator)
-![License](https://img.shields.io/badge/license-MIT%20%2B%20Commons%20Clause-blue)
+![License](https://img.shields.io/badge/license-Personal%20Use%20Only-red)
 ![Platform](https://img.shields.io/badge/platform-Windows-informational)
 
 Local voice dictation for Windows. Hold **Ctrl + Win**, speak, release — your
@@ -20,6 +20,8 @@ focus. No cloud, no accounts, nothing leaves your PC.
        alt="Dictator dashboard — usage stats, behaviour toggles, model selection, custom vocabulary, and a searchable dictation history">
 </p>
 
+<p align="center"><sub><i>Dictation history is blurred in these screenshots for privacy — the app shows it in full.</i></sub></p>
+
 <!-- TODO: record a 10-15s GIF of hold-to-dictate in action (ScreenToGif or
 similar) and drop it in near the top — a moving demo would sell the
 hold-speak-release loop better than a static dashboard shot can. -->
@@ -31,6 +33,19 @@ slower than talking, but every dictation tool I tried either shipped audio to
 a cloud API or left "um"s and false starts in the transcript. Built this to
 run fully local and clean up the mess a real voice makes, then kept using it
 daily until it stopped breaking.
+
+## How the cleanup works
+
+Three local stages — nothing leaves your machine at any point:
+
+1. **Capture** — hold the hotkey and speak; audio is buffered in memory.
+2. **Transcribe** — [`faster-whisper`](https://github.com/SYSTRAN/faster-whisper)
+   turns speech into text on-device, GPU-accelerated with a CPU fallback.
+3. **Polish** — a local Ollama model strips fillers ("um", "you know"),
+   resolves self-corrections ("12, no wait, 11" → "11"), and fixes grammar and
+   punctuation. The result is typed into the focused app via simulated
+   keystrokes. If Ollama is unreachable, you get the raw transcript instead of
+   nothing.
 
 ## Install
 
@@ -50,6 +65,17 @@ checks whether Ollama has a cleanup model pulled (suggests and downloads
 every step skips if it's already done.
 
 After setup, just double-click `Dictator.bat` to start it again.
+
+## Requirements
+
+- Windows 10 or 11
+- Python 3.11+
+- ~1–3 GB free disk for the Whisper model you pick (base / small / medium)
+- **Optional:** an NVIDIA GPU for faster transcription — CPU works, just slower
+- **Optional:** Ollama plus a small instruct model for cleanup — skip it and
+  you'll get raw, unpolished transcripts
+
+Hit a snag during setup? See [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md).
 
 ## How to use it
 
@@ -81,7 +107,9 @@ nothing is stored until you turn it on.
 
 | Behaviour, models & vocabulary | Searchable dictation history |
 | :---: | :---: |
-| <img src="docs/screenshots/controls.jpg" alt="Behaviour toggles, Whisper and Ollama model selection, hotkey mode, and custom vocabulary"> | <img src="docs/screenshots/history.jpg" alt="Searchable, timestamped history of past dictations with word counts"> |
+| <img src="docs/screenshots/controls.jpg" alt="Behaviour toggles, Whisper and Ollama model selection, hotkey mode, and custom vocabulary"> | <img src="docs/screenshots/history.jpg" alt="Searchable, timestamped history of past dictations with word counts — text blurred for privacy"> |
+
+<sub><i>History text above is blurred for privacy.</i></sub>
 
 ## Tray menu (right-click the mic icon)
 
@@ -89,24 +117,48 @@ Enable/disable, pick microphone, pick Whisper model size (base/small/medium),
 toggle status bar, toggle history logging, start on login, open config
 folder, quit.
 
-## Troubleshooting
+## Roadmap
 
-See [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) for common issues and
-the config file reference.
+Rough, honest, and subject to whatever breaks first:
 
-## Architecture
+- A short demo GIF of the hold → speak → release loop
+- Dashboard polish pass
+- More voice commands and snippet triggers
+- Per-app tone profiles that ship with sensible defaults
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the stack, code map, and
-threading model — read that before sending a PR.
+PRs welcome — read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the stack,
+code map, and threading model before you send one.
 
 ## Privacy
 
-Audio lives in memory only and is discarded after transcription. Clipboard is
-never touched — text is typed via simulated keystrokes. The only network
-traffic is to Ollama on `localhost`, plus one-time model downloads during
-setup. No telemetry, no accounts, no API keys.
+Dictator runs entirely on your machine. Nothing about your voice or text is
+ever sent anywhere.
 
-## License
+- **Audio never hits disk.** It's held in memory only during transcription and
+  discarded the moment it's done.
+- **Everything is on-device.** Transcription runs locally via `faster-whisper`;
+  the cleanup LLM runs locally via Ollama on `localhost`.
+- **The only network traffic** the app ever makes is to Ollama at `localhost`,
+  plus one-time model downloads when you first install. There is no server of
+  mine in the loop — ever.
+- **Your clipboard is never touched.** Text is inserted with simulated
+  keystrokes, so nothing you've copied gets read or overwritten.
+- **History logging is opt-in and off by default.** Turn it on and entries are
+  stored only in your local config folder — you can clear them at any time.
+- **No telemetry, no analytics, no crash reporting, no accounts, no API keys.**
 
-MIT + Commons Clause — free to use, modify, and share; not for resale. See
-[LICENSE](LICENSE).
+The dictation history shown in the screenshots above is blurred — that's me
+protecting my own notes, not a product feature.
+
+## License — personal use only
+
+Dictator is free for your **own personal use**. That's the whole grant.
+
+- ✅ Use it and modify it for yourself.
+- ❌ **No selling**, reselling, sublicensing, or bundling it into anything you
+  charge for.
+- ❌ **No publishing, reposting, or redistributing** it — in whole or in part,
+  publicly or privately — without my written permission.
+
+Want to use it for anything beyond that? Ask first: **uideasofficial@gmail.com**.
+Full terms in [LICENSE](LICENSE).
