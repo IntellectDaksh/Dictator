@@ -11,13 +11,18 @@ self-corrections resolved, grammar fixed), and typed into whatever app has
 focus. No cloud, no accounts, nothing leaves your PC.
 
 > **Status:** core dictation works reliably — this is my own daily driver.
-> The dashboard UI is functional but plain. If this gets traction, dashboard
+> The dashboard UI is functional and improving. If this gets traction, more
 > polish and bug fixes are next — [open an issue](../../issues) if something
 > breaks or you want a feature.
 
+<p align="center">
+  <img src="docs/screenshots/dashboard.jpg" width="100%"
+       alt="Dictator dashboard — usage stats, behaviour toggles, model selection, custom vocabulary, and a searchable dictation history">
+</p>
+
 <!-- TODO: record a 10-15s GIF of hold-to-dictate in action (ScreenToGif or
-similar) and drop it here as demo.gif — biggest single upgrade this README
-is missing, screenshots undersell what this actually does. -->
+similar) and drop it in near the top — a moving demo would sell the
+hold-speak-release loop better than a static dashboard shot can. -->
 
 ## Why this exists
 
@@ -69,6 +74,15 @@ Say it messy: "um let's meet at 12 no wait 11" becomes "Let's meet at 11."
 - Dictation history + stats dashboard (opt-in logging, off by default)
 - Dark/light theme, custom accent color, start-on-login
 
+## Dashboard
+
+Everything is tunable from one screen, and logging is **off by default** —
+nothing is stored until you turn it on.
+
+| Behaviour, models & vocabulary | Searchable dictation history |
+| :---: | :---: |
+| <img src="docs/screenshots/controls.jpg" alt="Behaviour toggles, Whisper and Ollama model selection, hotkey mode, and custom vocabulary"> | <img src="docs/screenshots/history.jpg" alt="Searchable, timestamped history of past dictations with word counts"> |
+
 ## Tray menu (right-click the mic icon)
 
 Enable/disable, pick microphone, pick Whisper model size (base/small/medium),
@@ -96,7 +110,3 @@ setup. No telemetry, no accounts, no API keys.
 
 MIT + Commons Clause — free to use, modify, and share; not for resale. See
 [LICENSE](LICENSE).
-
----
-
-[![Star History Chart](https://api.star-history.com/svg?repos=IntellectDaksh/Dictator&type=Date)](https://star-history.com/#IntellectDaksh/Dictator&Date)
