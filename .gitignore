@@ -1,0 +1,14 @@
+# Private user data — never commit
+Cache/
+*.jsonl
+main-debug.log
+dashboard/dash-debug.log
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# OS cruft
+.DS_Store
+Thumbs.db

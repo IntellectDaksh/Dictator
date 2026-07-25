@@ -1,0 +1,22 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  syntax-check:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Compile-check the app (no external deps needed for this)
+        run: |
+          python -m py_compile main.py
+          python -m py_compile dashboard/dashboard.py
+      - name: Syntax-check the dashboard frontend
+        run: node --check dashboard/app.js

@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dictator</title>
+  <link rel="stylesheet" href="./styles.css?v=15" />
+</head>
+<body>
+  <div id="app" class="hud-in">
+    <div class="shell">
+      <nav class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="1" y="1" width="22" height="22" rx="6" fill="#0e0d0c" stroke="none"/>
+              <path d="M3.6 12 5.7 13.7 7.8 13.47 9.9 8.79 12 8.31 14.1 13.61 16.2 15.18 18.3 12.14 20.4 12" fill="none"/>
+            </svg>
+          </div>
+          <div class="brand-name">Dictator</div>
+        </div>
+        <div class="nav-items">
+          <button class="nav-item active" data-page="home" type="button">
+            <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M2 4h8M12 4h2M2 8h5M9 8h5M2 12h8M12 12h2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="10" cy="4" r="1.6" stroke="currentColor" stroke-width="1.4"/><circle cx="7" cy="8" r="1.6" stroke="currentColor" stroke-width="1.4"/><circle cx="10" cy="12" r="1.6" stroke="currentColor" stroke-width="1.4"/></svg>
+            <span>Home</span>
+          </button>
+          <button class="nav-item" data-page="insights" type="button">
+            <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M2 13V8M6 13V3M10 13V6M14 13V9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Insights</span>
+          </button>
+          <button class="nav-item" data-page="settings" type="button">
+            <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M9.6 2.4l.5 1.6 1.5.6 1.4-.9.9.9-.9 1.4.6 1.5 1.6.5v1.3l-1.6.5-.6 1.5.9 1.4-.9.9-1.4-.9-1.5.6-.5 1.6H8.3l-.5-1.6-1.5-.6-1.4.9-.9-.9.9-1.4-.6-1.5-1.6-.5V8l1.6-.5.6-1.5-.9-1.4.9-.9 1.4.9 1.5-.6.5-1.6h1.3z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><circle cx="8" cy="8" r="1.8" stroke="currentColor" stroke-width="1.2"/></svg>
+            <span>Settings</span>
+          </button>
+          <button class="nav-item" data-page="about" type="button">
+            <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4"/><path d="M8 7.2v3.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="5.2" r="0.9" fill="currentColor"/></svg>
+            <span>About</span>
+          </button>
+        </div>
+        <div class="sidebar-foot hud-badge"><span class="dot accent"></span>LOCAL</div>
+      </nav>
+
+      <div class="main">
+        <div class="content">
+
+          <!-- ---------------- Home ---------------- -->
+          <section class="page active" data-page="home">
+            <div class="page-hd">
+              <h1>Home</h1>
+              <div class="page-desc">Hold Ctrl + Win to dictate. Double-tap for hands-free.</div>
+            </div>
+            <div class="stat-grid hud-slide-up" id="stats">
+              <div class="stat-tile"><div class="val" data-stat="n">0</div><div class="cap">Dictations</div><svg class="spark" id="spark" viewBox="0 0 100 22" preserveAspectRatio="none"></svg></div>
+              <div class="stat-tile"><div class="val" data-stat="raw_w">0</div><div class="cap">Words spoken</div></div>
+              <div class="stat-tile"><div class="val" data-stat="cln_w">0</div><div class="cap">Words typed</div></div>
+              <div class="stat-tile"><div class="val" data-stat="wpm">0</div><div class="cap">Avg WPM</div></div>
+              <div class="stat-tile"><div class="val" data-stat="streak">0</div><div class="cap">Day streak</div></div>
+            </div>
+            <div id="home-body"></div>
+            <div class="panel-hd">
+              <h2>Recent dictations</h2>
+              <div class="search-wrap">
+                <span class="hud-label">Search</span>
+                <input id="search" type="text" placeholder="filter…" />
+              </div>
+            </div>
+            <div class="hairline"></div>
+            <div class="rec" id="recent"></div>
+          </section>
+
+          <!-- ---------------- Insights ---------------- -->
+          <section class="page" data-page="insights">
+            <div class="page-hd">
+              <h1>Insights</h1>
+              <div class="page-desc">Everything about how you dictate, kept local.</div>
+            </div>
+            <div id="insights-body"></div>
+          </section>
+
+          <!-- ---------------- Settings ---------------- -->
+          <section class="page" data-page="settings">
+            <div class="page-hd">
+              <h1>Settings</h1>
+              <div class="page-desc">Everything configurable, in one place.</div>
+            </div>
+            <div id="settings-body"></div>
+          </section>
+
+          <!-- ---------------- About ---------------- -->
+          <section class="page" data-page="about">
+            <div class="page-hd">
+              <h1>About</h1>
+              <div class="page-desc">The app, and who built it.</div>
+            </div>
+            <div id="about-body"></div>
+          </section>
+
+        </div>
+
+        <div class="statusbar" id="statusbar"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+  <script src="./app.js?v=11"></script>
+</body>
+</html>

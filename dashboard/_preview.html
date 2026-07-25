@@ -1,0 +1,165 @@
+<!doctype html>
+<!-- Browser preview harness: mocks the pywebview bridge with sample data so the
+     dashboard UI can be opened in any browser (design iteration + screenshots).
+     Not used at runtime — dashboard.py serves the real index.html. -->
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <title>Dictator — preview</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div id="app" class="hud-in">
+    <div class="shell">
+      <nav class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="1" y="1" width="22" height="22" rx="6" fill="#0e0d0c" stroke="none"/>
+              <path d="M3.6 12 5.7 13.7 7.8 13.47 9.9 8.79 12 8.31 14.1 13.61 16.2 15.18 18.3 12.14 20.4 12" fill="none"/>
+            </svg>
+          </div>
+          <div class="brand-name">Dictator</div>
+        </div>
+        <div class="nav-items">
+          <button class="nav-item active" data-page="home" type="button">
+            <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M2 4h8M12 4h2M2 8h5M9 8h5M2 12h8M12 12h2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="10" cy="4" r="1.6" stroke="currentColor" stroke-width="1.4"/><circle cx="7" cy="8" r="1.6" stroke="currentColor" stroke-width="1.4"/><circle cx="10" cy="12" r="1.6" stroke="currentColor" stroke-width="1.4"/></svg>
+            <span>Home</span>
+          </button>
+          <button class="nav-item" data-page="insights" type="button">
+            <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M2 13V8M6 13V3M10 13V6M14 13V9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Insights</span>
+          </button>
+          <button class="nav-item" data-page="settings" type="button">
+            <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M9.6 2.4l.5 1.6 1.5.6 1.4-.9.9.9-.9 1.4.6 1.5 1.6.5v1.3l-1.6.5-.6 1.5.9 1.4-.9.9-1.4-.9-1.5.6-.5 1.6H8.3l-.5-1.6-1.5-.6-1.4.9-.9-.9.9-1.4-.6-1.5-1.6-.5V8l1.6-.5.6-1.5-.9-1.4.9-.9 1.4.9 1.5-.6.5-1.6h1.3z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><circle cx="8" cy="8" r="1.8" stroke="currentColor" stroke-width="1.2"/></svg>
+            <span>Settings</span>
+          </button>
+          <button class="nav-item" data-page="about" type="button">
+            <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4"/><path d="M8 7.2v3.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="5.2" r="0.9" fill="currentColor"/></svg>
+            <span>About</span>
+          </button>
+        </div>
+        <div class="sidebar-foot hud-badge"><span class="dot accent"></span>LOCAL</div>
+      </nav>
+
+      <div class="main">
+        <div class="content">
+
+          <section class="page active" data-page="home">
+            <div class="page-hd">
+              <h1>Home</h1>
+              <div class="page-desc">Hold Ctrl + Win to dictate. Double-tap for hands-free.</div>
+            </div>
+            <div class="stat-grid hud-slide-up" id="stats">
+              <div class="stat-tile"><div class="val" data-stat="n">0</div><div class="cap">Dictations</div><svg class="spark" id="spark" viewBox="0 0 100 22" preserveAspectRatio="none"></svg></div>
+              <div class="stat-tile"><div class="val" data-stat="raw_w">0</div><div class="cap">Words spoken</div></div>
+              <div class="stat-tile"><div class="val" data-stat="cln_w">0</div><div class="cap">Words typed</div></div>
+              <div class="stat-tile"><div class="val" data-stat="wpm">0</div><div class="cap">Avg WPM</div></div>
+              <div class="stat-tile"><div class="val" data-stat="streak">0</div><div class="cap">Day streak</div></div>
+            </div>
+            <div id="home-body"></div>
+            <div class="panel-hd">
+              <h2>Recent dictations</h2>
+              <div class="search-wrap">
+                <span class="hud-label">Search</span>
+                <input id="search" type="text" placeholder="filter…" />
+              </div>
+            </div>
+            <div class="hairline"></div>
+            <div class="rec" id="recent"></div>
+          </section>
+
+          <section class="page" data-page="insights">
+            <div class="page-hd">
+              <h1>Insights</h1>
+              <div class="page-desc">Everything about how you dictate, kept local.</div>
+            </div>
+            <div id="insights-body"></div>
+          </section>
+
+          <section class="page" data-page="settings">
+            <div class="page-hd">
+              <h1>Settings</h1>
+              <div class="page-desc">Everything configurable, in one place.</div>
+            </div>
+            <div id="settings-body"></div>
+          </section>
+
+          <section class="page" data-page="about">
+            <div class="page-hd">
+              <h1>About</h1>
+              <div class="page-desc">The app, and who built it.</div>
+            </div>
+            <div id="about-body"></div>
+          </section>
+
+        </div>
+
+        <div class="statusbar" id="statusbar"></div>
+      </div>
+    </div>
+  </div>
+  <div id="toast"></div>
+
+  <script>
+    // ---- mock bridge ----
+    const CFG = {
+      enabled: true, model_size: "small.en", input_device: null,
+      log_history: true, history_dir: "C:\\Users\\DESK\\AppData\\Roaming\\Dictator",
+      vocabulary: ["Uideas", "Daksh", "VeeFly"], review_before_typing: false,
+      hotkey_mods: ["ctrl", "win"], hotkey_mode: "hold", theme: "dark",
+      accent_color: null, highlight_color: null, auto_punctuate: true, auto_theme: false,
+      tone_overrides: { casual: ["slack.exe"], formal: [], verbatim: ["code.exe"] },
+      snippets: { omw: "on my way", ttyl: "talk to you later" }, pinned: [],
+      language: "en", silence_auto_stop: false, silence_threshold: 0.02, silence_duration_s: 1.5,
+      sound_enabled: false, redact_patterns: [], profiles: {}, active_profile: null,
+      start_on_login: false,
+    };
+    const RECENT = [
+      { t: "2026-07-23T09:40", t_disp: "23 JUL · 09:40", cleaned: "Let's connect at 11pm to lock the edit.", pinned: true },
+      { t: "2026-07-23T08:12", t_disp: "23 JUL · 08:12", cleaned: "Send the revised proposal to Sarah, not John — and cc the whole team so nobody's left out of the loop this time.", pinned: false },
+      { t: "2026-07-22T23:04", t_disp: "22 JUL · 23:04", cleaned: "New paragraph. The motion pass is ready for review.", pinned: false },
+      { t: "2026-07-22T18:30", t_disp: "22 JUL · 18:30", cleaned: "Ship the reskin to the standalone dashboard tonight.", pinned: false },
+      { t: "2026-07-22T17:16", t_disp: "22 JUL · 17:16", cleaned: "Follow up with the restaurant prospect about the reel package.", pinned: false },
+    ];
+    const STATS = { n: 2, raw_w: 14, cln_w: 12, wpm: 0, streak: 0, spark: [0, 0, 0, 0, 0, 0, 2] };
+    const HEALTH = { enabled: "on", whisper: "small.en / CUDA", loaded: "ready", ollama: "qwen2.5:7b-instruct", mic: "System default", review: "off" };
+    const STORAGE = [
+      { name: "Whisper cache", size: "466.0 MB", files: 3 },
+      { name: "Ollama models", size: "4.7 GB", files: 11 },
+      { name: "Python env", size: "2.1 GB", files: 8420 },
+      { name: "History", size: "1.2 MB", files: 1 },
+    ];
+    const MICS = [{ name: "System default", index: null }, { name: "Yeti Stereo Microphone — WASAPI", index: 1 }, { name: "Headset Microphone — MME", index: 2 }];
+    const today = new Date();
+    const INSIGHTS = {
+      longest_streak: 10, best_wpm: 213, refined: 22, word_delta: 96,
+      apps: [{app:"code.exe",count:24,pct:38},{app:"chrome.exe",count:18,pct:28},{app:"slack.exe",count:12,pct:19},{app:"Unknown",count:10,pct:15}],
+      tones: [{tone:"default",count:30},{tone:"verbatim",count:18},{tone:"casual",count:10},{tone:"formal",count:6}],
+      hourly: [0,0,0,0,0,0,1,3,6,8,5,4,3,6,9,7,5,4,3,2,1,0,0,0],
+      calendar: Array.from({length:126},(_,i)=>{ const d=new Date(today); d.setDate(d.getDate()-(125-i)); const c=Math.random()<0.5?0:Math.floor(Math.random()*8); return {date:d.toISOString().slice(0,10), count:c, level: c===0?0:c<=1?1:c<=3?2:c<=6?3:4}; }),
+    };
+    const PRESETS = [["Ctrl + Win", ["ctrl", "win"]], ["Ctrl + Alt", ["ctrl", "alt"]], ["Ctrl + Shift", ["ctrl", "shift"]], ["Alt + Win", ["alt", "win"]]];
+    const LANGUAGES = [["auto","Auto-detect"],["en","English"],["hi","Hindi"],["es","Spanish"],["fr","French"],["de","German"],["pt","Portuguese"],["ru","Russian"],["zh","Chinese"],["ja","Japanese"],["ar","Arabic"],["it","Italian"]];
+    const SILENCE_PRESETS = [["sensitive","Sensitive",0.015,1.0],["balanced","Balanced",0.02,1.5],["relaxed","Relaxed",0.03,2.5]];
+    const noop = () => Promise.resolve(true);
+    window.pywebview = { api: {
+      get_state: () => Promise.resolve({ config: CFG, mics: MICS, hotkey_presets: PRESETS, languages: LANGUAGES, silence_presets: SILENCE_PRESETS, stats: STATS, recent: RECENT, health: HEALTH, storage: STORAGE, history_path: CFG.history_dir + "\\history.jsonl" }),
+      get_live: () => Promise.resolve({ stats: STATS, recent: RECENT, health: HEALTH, storage: STORAGE }),
+      get_config: () => Promise.resolve(CFG),
+      set_config: (p) => { Object.assign(CFG, p); return Promise.resolve(true); },
+      set_start_on_login: (on) => { CFG.start_on_login = on; return Promise.resolve(true); },
+      get_insights: () => Promise.resolve(INSIGHTS),
+      open_url: (url) => { window.open(url, "_blank"); return Promise.resolve(true); },
+      search: (q) => Promise.resolve(RECENT.filter(r => r.cleaned.toLowerCase().includes(q))),
+      toggle_pin: noop, copy_text: noop, copy_last: noop, undo_last: noop, clean_clipboard: noop,
+      capture_hotkey: () => Promise.resolve(["ctrl", "alt"]), retry_health: noop,
+      confirm: () => Promise.resolve(true), clear_whisper_cache: noop, clear_ollama_models: noop,
+      open_folder: noop, pick_folder: () => Promise.resolve(null), export_history: () => Promise.resolve(342),
+      purge_history: noop, backup_settings: noop, restore_settings: noop,
+    } };
+  </script>
+  <script src="./app.js"></script>
+  <script>window.dispatchEvent(new Event("pywebviewready"));</script>
+</body>
+</html>
