@@ -27,6 +27,21 @@ lands in your text box.
 > mac testing and more features are next — [open an issue](../../issues) if
 > something breaks or you want a feature.
 
+## Where it fits
+
+| | Cloud dictation apps (Wispr Flow, etc.) | Other open-source dictation tools | Dictator |
+|---|---|---|---|
+| Cost | Subscription | Free | Free |
+| Audio leaves your PC | Yes | No | No |
+| Cleans filler words / self-corrections | Yes | Usually not — raw transcript only | Yes, local |
+| Works offline | No | Yes | Yes |
+| App-aware tone (casual/formal/verbatim) | Rare | No | Yes |
+
+The gap this fills: free and open dictation tools exist, but almost all of
+them stop at the raw Whisper transcript. Dictator adds the cleanup pass —
+the part that actually makes a transcript usable — without sending anything
+to a server to do it.
+
 ## Install
 
 **Windows** — PowerShell:
@@ -106,6 +121,30 @@ Say it messy: "um let's meet at 12 no wait 11" becomes "Let's meet at 11."
 Enable/disable, pick microphone, pick Whisper model size (base/small/medium),
 toggle status bar, toggle history logging, start on login, open config
 folder, quit.
+
+## FAQ
+
+**Does any audio or text leave my machine?**
+No. Speech-to-text runs locally via `faster-whisper`, cleanup runs locally
+via Ollama on `localhost`. The only network calls are to Ollama itself and,
+during install, pulling the models. See [Privacy](#privacy) below.
+
+**Do I need a GPU?**
+No — CPU works fine, GPU (CUDA, Windows only) just makes transcription
+faster. `faster-whisper` picks whichever is available.
+
+**What if Ollama isn't running or the cleanup model isn't pulled?**
+Dictator falls back to the raw (optionally auto-punctuated) transcript
+rather than failing silently. You never lose a dictation because the
+cleanup step had a bad moment.
+
+**Can I use my own cleanup model instead of the default?**
+Yes — any model pulled in Ollama works; set it from Settings.
+
+**Windows or macOS — which is more solid right now?**
+Windows. It's the daily driver this was built for. macOS support is real
+(every platform-specific call is branched and implemented) but hasn't been
+run on physical Mac hardware yet — see the note in [Install](#install).
 
 ## Troubleshooting
 
