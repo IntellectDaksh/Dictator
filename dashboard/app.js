@@ -236,10 +236,20 @@ function hourlyChart(hourly) {
   return el("div", { class: "hour-chart" }, ...bars);
 }
 
-function calendarGrid(cells) {
-  const grid = el("div", { class: "cal-grid" });
-  for (const c of cells) grid.append(el("div", { class: `cal-cell lvl-${c.level}`, title: `${c.date}: ${c.count} dictation${c.count === 1 ? "" : "s"}` }));
-  return grid;
+function calendarGrid(cells, monthLabels) {
+  const weeks = Math.max(1, Math.round(cells.length / 7));
+  const months = el("div", { class: "cal-months", style: `grid-template-columns:repeat(${weeks},12px)` });
+  for (const m of monthLabels || []) months.append(el("span", { style: `grid-column:${m.week + 1}` }, m.label));
+  const dayLabels = el("div", { class: "cal-daylabels" }, ...["", "Mon", "", "Wed", "", "Fri", ""].map((d) => el("span", {}, d)));
+  const grid = el("div", { class: "cal-grid", style: `grid-template-columns:repeat(${weeks},12px)` });
+  for (const c of cells) {
+    const future = c.level < 0;
+    grid.append(el("div", {
+      class: `cal-cell${future ? " future" : ` lvl-${c.level}`}`,
+      title: future ? "" : `${c.date}: ${c.count} dictation${c.count === 1 ? "" : "s"}`,
+    }));
+  }
+  return el("div", { class: "cal-wrap" }, months, el("div", { class: "cal-body" }, dayLabels, grid));
 }
 
 async function renderInsights() {
@@ -264,7 +274,7 @@ async function renderInsights() {
 
   box.append(group("Streak calendar",
     el("div", { class: "subfield" },
-      calendarGrid(data.calendar),
+      calendarGrid(data.calendar, data.month_labels),
       el("div", { class: "cal-legend" }, el("span", {}, "Less"),
         el("span", { class: "cal-cell lvl-0" }), el("span", { class: "cal-cell lvl-1" }), el("span", { class: "cal-cell lvl-2" }),
         el("span", { class: "cal-cell lvl-3" }), el("span", { class: "cal-cell lvl-4" }), el("span", {}, "More")))));

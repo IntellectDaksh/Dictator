@@ -1,9 +1,15 @@
-# Dictator
+<div align="center">
+  <img src="assets/icon/dictator-512.png" width="96" height="96" alt="Dictator logo" />
 
-![CI](https://github.com/IntellectDaksh/Dictator/actions/workflows/ci.yml/badge.svg)
-![Release](https://img.shields.io/github/v/release/IntellectDaksh/Dictator)
-![License](https://img.shields.io/badge/license-MIT%20%2B%20Commons%20Clause-blue)
-![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-informational)
+  # Dictator
+
+  **Talk. It types — cleaned up, not just transcribed.**
+
+  ![CI](https://github.com/IntellectDaksh/Dictator/actions/workflows/ci.yml/badge.svg)
+  ![Release](https://img.shields.io/github/v/release/IntellectDaksh/Dictator)
+  ![License](https://img.shields.io/badge/license-MIT%20%2B%20Commons%20Clause-blue)
+  ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-informational)
+</div>
 
 Local voice dictation. Hold a hotkey, speak, release — your words are
 transcribed on your own machine, cleaned up by a local AI pass (filler words

@@ -360,10 +360,17 @@ class Api:
         start = today - timedelta(days=today.weekday())  # this week's Monday
         start -= timedelta(weeks=weeks - 1)
         calendar = []
+        month_labels = []
+        last_month = None
         for w in range(weeks):
+            d_mon = start + timedelta(weeks=w)
+            if d_mon.month != last_month:
+                month_labels.append({"week": w, "label": d_mon.strftime("%b")})
+                last_month = d_mon.month
             for d_off in range(7):
                 d_ = start + timedelta(weeks=w, days=d_off)
                 if d_ > today:
+                    calendar.append({"date": d_.isoformat(), "count": 0, "level": -1})
                     continue
                 c = counts.get(d_, 0)
                 level = 0 if c == 0 else 1 if c <= 1 else 2 if c <= 3 else 3 if c <= 6 else 4
@@ -392,7 +399,7 @@ class Api:
         wpms = [len(e["raw"].split()) / e["secs"] * 60 for e in entries if e["secs"] >= 2]
         best_wpm = round(max(wpms)) if wpms else 0
 
-        return {"calendar": calendar, "longest_streak": longest,
+        return {"calendar": calendar, "month_labels": month_labels, "longest_streak": longest,
                 "apps": apps, "tones": tones, "hourly": hourly,
                 "refined": refined, "word_delta": word_delta, "best_wpm": best_wpm}
 

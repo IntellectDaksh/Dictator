@@ -1,5 +1,13 @@
 # Dictator — update log
 
+## Late July 2026 update — patch
+
+- **Fixed the streak calendar** — future days were being skipped entirely
+  instead of rendered as blank, which desynced the grid's row alignment and
+  made it look scrambled. Now every cell (past or future) gets a slot, and
+  it has real GitHub-style month labels and Mon/Wed/Fri row labels.
+- **README** — added a logo header and tagline; no more bare text wall.
+
 ## Late July 2026 update
 
 Plain-English summary of what changed. No code details.
