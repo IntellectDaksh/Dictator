@@ -58,15 +58,39 @@ curl -fsSL https://raw.githubusercontent.com/IntellectDaksh/Dictator/main/script
 ```
 
 Either one-liner clones the repo, creates a virtual environment, installs
-every dependency, checks whether you already have a local Ollama cleanup
-model pulled — and if not, tells you what it recommends and asks a plain
-yes/no before downloading anything — then launches the app. Safe to re-run
-any time; every step skips if it's already done.
+every dependency, installs Ollama if it's missing, **tunes Dictator to your
+hardware** (see below), pulls the matching cleanup model, then launches the
+app. No prompts. Safe to re-run any time; every step skips if it's already
+done.
 
 Requires [Git](https://git-scm.com/downloads) and Python 3.11+ (the
-Windows script installs Git via `winget` if missing; the macOS script
-installs Homebrew + Python if missing) and optionally
-[Ollama](https://ollama.com/download) for the cleanup pass.
+Windows script installs Git and Ollama via `winget` if missing; the macOS
+script installs Homebrew, Python and Ollama if missing).
+
+## Tuned to your machine
+
+The installer runs `hwtune.py`, which reads your RAM, GPU and CPU and picks
+the models that keep dictation around the same speed on any laptop — bigger
+models where the hardware has room, smaller ones where it doesn't:
+
+| Your hardware | Speech model (Whisper) | Cleanup model (Ollama) |
+|---|---|---|
+| NVIDIA GPU, 6 GB+ VRAM | `small.en`, float16 on GPU | `qwen2.5:3b-instruct` (~1.9 GB) |
+| NVIDIA GPU, 4–6 GB | `small.en`, float16 on GPU | `qwen2.5:1.5b-instruct` (~1 GB) |
+| NVIDIA GPU, 2–4 GB | `small.en`, int8 on GPU | `qwen2.5:1.5b-instruct` |
+| Apple Silicon, 16 GB+ | `base.en`, int8 on CPU | `qwen2.5:3b-instruct` |
+| No GPU, 12 GB+ RAM | `base.en`, int8 on CPU | `qwen2.5:1.5b-instruct` |
+| No GPU, under 12 GB | `base.en`, int8 on CPU | `qwen2.5:0.5b-instruct` (~0.4 GB) |
+
+It writes the choice into your config, starts Ollama, pulls the model if you
+don't have it, and links it — nothing to set by hand. Dictator itself never
+re-tunes at startup, so anything you change later in the tray menu sticks.
+Upgraded your hardware? Re-run it:
+
+```bash
+python hwtune.py           # show what it detects and would pick
+python hwtune.py --pull    # apply it and pull the model
+```
 
 After setup: double-click `Dictator.bat` (Windows) or `Dictator.command`
 (macOS) to start it again.
@@ -122,6 +146,26 @@ balloons in length, is rejected and the plain transcript is typed instead.
 Every dictation logs stage timings (never text) to `latency.jsonl` in the
 config folder, so slowdowns are visible.
 
+## Light on memory
+
+Built to sit in the tray all day on a laptop that's already running a browser
+and an editor:
+
+- **~340 MB RAM** for the app with Whisper loaded (measured on Windows,
+  `small.en` on GPU). On GPU machines the model weights live in VRAM, not RAM.
+- **No LLM in memory by default.** Fast mode never touches Ollama. Smart mode
+  loads the small cleanup model on demand and Ollama drops it after 2 minutes
+  idle, so it only costs memory while you're actively dictating.
+- **Small models first.** 0.5B–3B cleanup models instead of the 7B–14B most
+  local setups default to — the cleanup job is short and structured, so a
+  small model does it in a fraction of the time and memory.
+- **Tight context.** Cleanup requests use a 512-token window and cap the
+  output length, so Ollama doesn't reserve memory it will never use.
+- **Memory trimmed after each dictation** — freed audio buffers are handed
+  back to the OS instead of sitting in the process.
+- Audio is never written to disk, and only 0.3 s of it is buffered outside a
+  dictation.
+
 ## Features
 
 - Hold-to-dictate or hands-free (double-tap for hold mode, single-tap toggle),
@@ -161,6 +205,12 @@ folder, quit.
 No. Speech-to-text runs locally via `faster-whisper`, cleanup runs locally
 via Ollama on `localhost`. The only network calls are to Ollama itself and,
 during install, pulling the models. See [Privacy](#privacy) below.
+
+**Will it be as fast on my laptop as on yours?**
+That's what the hardware tuning is for: slower machines get lighter models so
+the wait after you release stays short. A laptop without a GPU uses the
+smaller `base.en` speech model, which is a little less accurate on unusual
+words than `small.en` — add those to your custom vocabulary.
 
 **Do I need a GPU?**
 No — CPU works fine, GPU (CUDA, Windows only) just makes transcription

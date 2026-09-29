@@ -1,6 +1,6 @@
 #requires -version 5.1
 <#
-One-command setup: creates the venv, installs deps, makes sure Ollama has a
+One-command setup: creates the venv, installs deps, tunes models to the hardware, makes sure Ollama has a
 cleanup model pulled (suggests + downloads one if none found), then launches
 Dictator. Safe to re-run any time — every step is skip-if-already-done.
 #>
@@ -54,47 +54,24 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
-# 4. Ollama + cleanup model ---------------------------------------------------
-$ollama = Get-Command ollama -ErrorAction SilentlyContinue
-if (-not $ollama) {
-    Write-Host ""
-    Write-Host "Ollama not found." -ForegroundColor Yellow
-    Write-Host "Install it from https://ollama.com/download to get transcript cleanup (filler-word removal, grammar fixes)."
-    Write-Host "Dictator still works without it - it just types your raw transcript instead."
-} else {
-    $tags = $null
-    try {
-        $tags = Invoke-RestMethod -Uri "http://localhost:11434/api/tags" -TimeoutSec 5
-    } catch {
-        Write-Host "Starting Ollama..."
-        Start-Process "ollama" "serve" -WindowStyle Hidden
-        Start-Sleep -Seconds 3
-        try { $tags = Invoke-RestMethod -Uri "http://localhost:11434/api/tags" -TimeoutSec 5 } catch { $tags = $null }
-    }
-
-    $preferred = @("qwen3:14b", "qwen2.5:7b-instruct", "llama3.1:8b")
-    $have = @()
-    if ($tags -and $tags.models) { $have = $tags.models | ForEach-Object { $_.name } }
-
-    $found = $false
-    foreach ($p in $preferred) {
-        $base = $p.Split(":")[0]
-        if ($have | Where-Object { $_ -like "$base*" }) { $found = $true; break }
-    }
-
-    if (-not $found) {
-        Write-Host ""
-        Write-Host "No local cleanup model detected." -ForegroundColor Cyan
-        Write-Host "Suggested: qwen2.5:7b-instruct (~4.7 GB one-time download, good quality/speed balance on most PCs)."
-        $ans = Read-Host "Download it now? [Y/n]"
-        if ($ans -eq "" -or $ans -match "^[Yy]") {
-            ollama pull qwen2.5:7b-instruct
-        } else {
-            Write-Host "Skipped - Dictator still works without it, it just types the raw transcript."
-        }
+# 4. Hardware auto-tune + Ollama cleanup model --------------------------------
+# hwtune.py reads RAM / GPU / CPU, picks the Whisper + Ollama models that keep
+# dictation fast on this machine, writes them into config.json, then starts
+# Ollama and pulls the model if it's missing. No prompts.
+$ollamaExe = "$env:LOCALAPPDATA\Programs\Ollama\ollama.exe"
+if (-not (Get-Command ollama -ErrorAction SilentlyContinue) -and -not (Test-Path $ollamaExe)) {
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        Write-Host "Installing Ollama (local AI runtime for the cleanup pass)..."
+        winget install -e --id Ollama.Ollama --silent --accept-package-agreements --accept-source-agreements | Out-Null
     } else {
-        Write-Host "Cleanup model already installed."
+        Write-Host "Ollama not found and winget unavailable - install it from https://ollama.com/download" -ForegroundColor Yellow
     }
+}
+Write-Host ""
+Write-Host "Tuning Dictator for this machine..."
+& "$root\.venv\Scripts\python.exe" "$root\hwtune.py" --pull
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Cleanup model not ready - Dictator still works, Smart mode types the plain transcript until it is." -ForegroundColor Yellow
 }
 
 # 5. Launch -------------------------------------------------------------------

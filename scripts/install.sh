@@ -49,37 +49,18 @@ echo "permission the first time you dictate (needed to detect the hotkey and"
 echo "type text). Grant it to your terminal app (or python3) in"
 echo "System Settings > Privacy & Security, then try again."
 
-# 4. Ollama + cleanup model ------------------------------------------------
-if ! command -v ollama >/dev/null 2>&1; then
-    echo ""
-    echo "Ollama not found."
-    echo "Install it from https://ollama.com/download for transcript cleanup (filler-word removal, grammar fixes)."
-    echo "Dictator still works without it - it just types your raw transcript instead."
-else
-    if ! curl -fsS --max-time 5 http://localhost:11434/api/tags >/tmp/dictator_tags.json 2>/dev/null; then
-        echo "Starting Ollama..."
-        (ollama serve >/dev/null 2>&1 &)
-        sleep 3
-        curl -fsS --max-time 5 http://localhost:11434/api/tags >/tmp/dictator_tags.json 2>/dev/null || echo '{"models":[]}' >/tmp/dictator_tags.json
-    fi
-    found=0
-    for p in qwen3 qwen2.5 llama3.1; do
-        if grep -q "\"$p" /tmp/dictator_tags.json 2>/dev/null; then found=1; fi
-    done
-    rm -f /tmp/dictator_tags.json
-    if [ "$found" -eq 0 ]; then
-        echo ""
-        echo "No local cleanup model detected."
-        echo "Suggested: qwen2.5:7b-instruct (~4.7 GB one-time download, good quality/speed balance)."
-        read -r -p "Download it now? [Y/n] " ans
-        if [ -z "$ans" ] || [[ "$ans" =~ ^[Yy] ]]; then
-            ollama pull qwen2.5:7b-instruct
-        else
-            echo "Skipped - Dictator still works without it, it just types the raw transcript."
-        fi
-    else
-        echo "Cleanup model already installed."
-    fi
+# 4. Hardware auto-tune + Ollama cleanup model -----------------------------
+# hwtune.py reads RAM / GPU / CPU, picks the Whisper + Ollama models that keep
+# dictation fast on this machine, writes them into config.json, then starts
+# Ollama and pulls the model if it's missing. No prompts.
+if ! command -v ollama >/dev/null 2>&1 && [ ! -d /Applications/Ollama.app ]; then
+    echo "Installing Ollama (local AI runtime for the cleanup pass)..."
+    brew install ollama || echo "Ollama install failed - get it from https://ollama.com/download"
+fi
+echo ""
+echo "Tuning Dictator for this machine..."
+if ! .venv/bin/python hwtune.py --pull; then
+    echo "Cleanup model not ready - Dictator still works, Smart mode types the plain transcript until it is."
 fi
 
 # 5. Launch -----------------------------------------------------------------

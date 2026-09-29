@@ -186,6 +186,7 @@ DEFAULTS = {
     "active_profile": None,
     "keep_mic_warm": True,                # keep input stream open; press captures instantly (+0.3 s pre-roll)
     "streaming": True,                    # transcribe finished sentences while still talking
+    "cuda_compute": "float16",            # set by hwtune.py at install; int8_float16 on <4 GB GPUs
     "stt_idle_unload_min": 0,             # 0 = keep Whisper resident (reload costs ~1.3 s + warmup)
 }
 
@@ -734,16 +735,17 @@ class Mic:
 
 
 class Transcriber:
-    def __init__(self, size):
+    def __init__(self, size, compute="float16"):
         self._lock = threading.Lock()
         self.size = size
+        self.compute = compute
         self.device = "?"
         self.model = None
 
     def load(self):
         with self._lock:
             try:
-                model = WhisperModel(self.size, device="cuda", compute_type="float16",
+                model = WhisperModel(self.size, device="cuda", compute_type=self.compute,
                                      download_root=WHISPER_CACHE)
                 # warmup forces CUDA init so a broken CUDA falls back at load
                 # time, not mid-dictation
@@ -1211,7 +1213,8 @@ class App:
         self.cfg = load_config()
         self._apply_theme()
         self.running = True
-        self.transcriber = Transcriber(self.cfg["model_size"])
+        self.transcriber = Transcriber(self.cfg["model_size"],
+                                       self.cfg.get("cuda_compute", "float16"))
         self._load_lock = threading.Lock()  # serializes first-use Whisper load
         self.mic = None  # warm input stream, see Mic
         self._last_dictation_end = time.time()  # idle clock for model auto-unload
@@ -3029,8 +3032,8 @@ class App:
         if self.ollama_model:
             print(f"cleanup model: {self.ollama_model}")
         else:
-            print("Ollama not reachable or no model pulled — dictation will use "
-                  f"raw transcripts. Fix: ollama pull {PREFERRED_MODELS[0]}")
+            print("Ollama not reachable or no model pulled — Smart mode will use "
+                  "the plain transcript. Fix: python hwtune.py --pull")
 
         self.icon = pystray.Icon("Dictator", self.make_icon_image(self.cfg["enabled"]),
                                  "Dictator", self.build_menu())
