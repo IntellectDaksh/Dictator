@@ -205,7 +205,3 @@ setup. No telemetry, no accounts, no API keys.
 
 MIT + Commons Clause — free to use, modify, and share; not for resale. See
 [LICENSE](LICENSE).
-
----
-
-[![Star History Chart](https://api.star-history.com/svg?repos=IntellectDaksh/Dictator&type=Date)](https://star-history.com/#IntellectDaksh/Dictator&Date)
