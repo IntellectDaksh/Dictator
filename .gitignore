@@ -12,3 +12,16 @@ __pycache__/
 # OS cruft
 .DS_Store
 Thumbs.db
+app_console.log
+# local audit artifacts — measurements, research notes, personal config backups
+audit/*
+!audit/bench.py
+!audit/e2e.py
+!audit/pace.py
+!audit/make_clips.ps1
+!audit/clips.tsv
+!audit/clips/
+audit/clips/*.wav
+*.bak
+*.bak-*
+*.patch

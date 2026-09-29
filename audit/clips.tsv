@@ -1,0 +1,12 @@
+short1	0	David	Send the invoice to the client today.
+short2	0	Zira	Can you call me back in ten minutes?
+short3	0	David	Open the project folder on the desktop.
+med1	0	Zira	I finished the first cut of the reel and I think the hook needs to be tighter, so let's trim the intro and move the reveal to the third second.
+med2	0	David	The meeting with the restaurant owner went well and they want a proposal for three short videos and a new logo by next Friday.
+long1	0	Zira	Okay so here is the plan for this week. On Monday I will finish the brand identity for the cafe, including the logo, the color palette and the menu design. On Tuesday I need to shoot the product videos and edit them the same night. Wednesday is for client calls and outreach, and by Thursday I want the website landing page live so we can start running ads over the weekend.
+noisy1	0	David	Please remind me to back up the hard drive before I start editing the wedding footage tonight.
+fast1	5	Zira	Quickly check the render queue and export the final version in four K before the client wakes up tomorrow morning.
+hinglish1	0	David	Bhai kal client ko call karna hai, proposal ready rakhna.
+hinglish2	0	Zira	Yaar ye video bahut accha bana hai, bas thumbnail change kar do.
+tech1	0	David	The Tauri app talks to Rust over IPC and stores everything in a local SQLite database.
+tech2	0	Zira	Run whisper dot cpp with the large V three turbo model and pipe the output to Ollama.

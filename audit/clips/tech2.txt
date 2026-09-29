@@ -1,0 +1,1 @@
+﻿Run whisper dot cpp with the large V three turbo model and pipe the output to Ollama.

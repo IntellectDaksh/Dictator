@@ -1,0 +1,1 @@
+﻿The Tauri app talks to Rust over IPC and stores everything in a local SQLite database.

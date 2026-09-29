@@ -21,10 +21,10 @@ most free/open dictation tools skip entirely: **the AI cleanup pass**. Most
 alternatives just hand you a raw transcript; Dictator fixes it before it
 lands in your text box.
 
-> **v1.** Core dictation is my own daily driver on Windows. macOS support
-> just landed and hasn't been run on real Mac hardware yet — the dashboard
-> UI is functional, the fundamentals work. If this gets traction, deeper
-> mac testing and more features are next — [open an issue](../../issues) if
+> **v1.1.** Core dictation is my own daily driver on Windows. This release
+> is about speed and typing reliability — text lands roughly 200 ms after
+> you let go of the hotkey. macOS support hasn't been run on real Mac
+> hardware yet — the fundamentals work. [Open an issue](../../issues) if
 > something breaks or you want a feature.
 
 ## Where it fits
@@ -36,6 +36,7 @@ lands in your text box.
 | Cleans filler words / self-corrections | Yes | Usually not — raw transcript only | Yes, local |
 | Works offline | No | Yes | Yes |
 | App-aware tone (casual/formal/verbatim) | Rare | No | Yes |
+| Release-to-text latency | ~0.7–2 s (network round trip) | Usually 1 s+ (decodes after release) | ~0.2 s typical, ~0.45 s p95 |
 
 The gap this fills: free and open dictation tools exist, but almost all of
 them stop at the raw Whisper transcript. Dictator adds the cleanup pass —
@@ -93,6 +94,33 @@ daily until it stopped breaking.
    is typed.
 
 Say it messy: "um let's meet at 12 no wait 11" becomes "Let's meet at 11."
+(Self-corrections like that need **Smart** cleanup — see below.)
+
+## Cleanup modes
+
+Pick one from the tray menu (right-click the mic icon → Processing mode).
+
+| Mode | What it does | Speed | Extra memory |
+|---|---|---|---|
+| **Fast** (default) | Punctuation, capitals, filler words removed — no LLM | Instant | None |
+| **Smart** | Full LLM pass: self-corrections, grammar, tone | ~0.5 s more | Small Ollama model, unloaded after 2 min idle |
+| **Verbatim** | Exactly what Whisper heard | Instant | None |
+
+Smart mode can't invent text: output with words you never said, or that
+balloons in length, is rejected and the plain transcript is typed instead.
+
+## Why it's fast
+
+- The mic stream stays open, so the first word is never clipped (0.3 s of
+  pre-roll is kept on press — nothing outside a dictation is stored).
+- Whisper stays loaded, and finished sentences are transcribed *while* you're
+  still talking — release only has to decode the last few words.
+- The GPU is kept out of its idle clock during recording.
+- Your custom vocabulary is passed to Whisper itself, not just the cleanup
+  step, so names and brand words come out right the first time.
+
+Every dictation logs stage timings (never text) to `latency.jsonl` in the
+config folder, so slowdowns are visible.
 
 ## Features
 
@@ -107,7 +135,11 @@ Say it messy: "um let's meet at 12 no wait 11" becomes "Let's meet at 11."
 - Language selection — 12 languages plus auto-detect
 - App-aware tone (casual/formal/verbatim per focused app, user-editable) and
   spoken tone overrides ("...make it formal")
-- Voice commands: "new line", "new paragraph", "bullet point"
+- Voice commands: "new line", "new paragraph", "bullet point" — newlines are
+  typed as Shift+Enter so chat boxes don't send early
+- Safe typing — waits until you've let go of every modifier, and stops the
+  moment focus moves to another window, so keystrokes never turn into
+  shortcuts or land in the wrong app
 - Snippets/macros, custom vocabulary for names/brand words
 - Redaction list — sensitive words/phrases scrubbed before they're ever
   written to disk
@@ -118,7 +150,8 @@ Say it messy: "um let's meet at 12 no wait 11" becomes "Let's meet at 11."
 
 ## Tray menu (right-click the mic icon)
 
-Enable/disable, pick microphone, pick Whisper model size (base/small/medium),
+Enable/disable, pick microphone, pick cleanup mode (Fast/Smart/Verbatim), pick
+Whisper model size (base/small/medium),
 toggle status bar, toggle history logging, start on login, open config
 folder, quit.
 
@@ -159,7 +192,11 @@ line-number-level map if you're picking this up cold.
 
 ## Privacy
 
-Audio lives in memory only and is discarded after transcription. Clipboard is
+Audio lives in memory only and is discarded after transcription. The mic
+stream stays open while the app runs (that's what removes the start-up lag),
+so Windows shows the mic as in use — audio outside a dictation is dropped
+immediately, never buffered past 0.3 s. Turn it off with `keep_mic_warm:
+false` in the config if you'd rather trade the lag for the indicator. Clipboard is
 never touched — text is typed via simulated keystrokes. The only network
 traffic is to Ollama on `localhost`, plus one-time model downloads during
 setup. No telemetry, no accounts, no API keys.

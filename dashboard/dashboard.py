@@ -49,7 +49,15 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 INDEX = os.path.join(HERE, "index.html")
 ICON = os.path.join(HERE, "dictator.ico")
 
-PREFERRED_MODELS = ("qwen3:14b", "qwen2.5:7b-instruct", "llama3.1:8b")
+PREFERRED_MODELS = (
+    "qwen2.5:1.5b-instruct",
+    "qwen2.5:0.5b-instruct",
+    "qwen2.5:3b-instruct",
+    "qwen3:8b",
+    "qwen2.5:7b-instruct",
+    "qwen3:14b",
+    "llama3.1:8b",
+)
 HOTKEY_PRESETS = [
     ("Ctrl + Win", ["ctrl", "win"]),
     ("Ctrl + Alt", ["ctrl", "alt"]),
@@ -60,7 +68,7 @@ BACKUP_KEYS = ("vocabulary", "snippets", "tone_overrides", "hotkey_mods",
                "hotkey_mode", "theme", "accent_color", "highlight_color", "auto_punctuate",
                "review_before_typing", "auto_theme", "language", "silence_auto_stop",
                "silence_threshold", "silence_duration_s", "sound_enabled",
-               "redact_patterns", "profiles")
+               "redact_patterns", "profiles", "cleanup_mode")
 LANGUAGES = [
     ("auto", "Auto-detect"), ("en", "English"), ("hi", "Hindi"), ("es", "Spanish"),
     ("fr", "French"), ("de", "German"), ("pt", "Portuguese"), ("ru", "Russian"),
@@ -139,18 +147,24 @@ def ollama_get(url, path, timeout=3.0):
 
 
 def resolve_ollama_model(cfg):
-    if cfg.get("ollama_model", "auto") != "auto":
-        return cfg["ollama_model"]
+    url = cfg.get("ollama_url", "http://127.0.0.1:11434")
     try:
-        names = [m["name"] for m in ollama_get(cfg.get("ollama_url", "http://localhost:11434"),
-                                               "/api/tags")["models"]]
+        tags = ollama_get(url, "/api/tags", timeout=1.5)
+        names = [m["name"] for m in tags.get("models", [])]
     except Exception:
         return None
+
+    specified = cfg.get("ollama_model", "auto")
+    if specified != "auto":
+        if any(n == specified or n.startswith(specified.split(":")[0]) for n in names):
+            return specified
+        # configured model isn't pulled: fall through to auto, same as main.py
+
     for want in PREFERRED_MODELS:
         for name in names:
             if name == want or name.startswith(want.split(":")[0]):
                 return name
-    return None
+    return names[0] if names else None
 
 
 def ollama_chat(system, user, cfg, model, timeout=None):
@@ -162,7 +176,7 @@ def ollama_chat(system, user, cfg, model, timeout=None):
         "messages": [{"role": "system", "content": system},
                      {"role": "user", "content": user}],
     }).encode()
-    req = urllib.request.Request(cfg.get("ollama_url", "http://localhost:11434") + "/api/chat",
+    req = urllib.request.Request(cfg.get("ollama_url", "http://127.0.0.1:11434") + "/api/chat",
                                  data=payload, headers={"Content-Type": "application/json"})
     try:
         with urllib.request.urlopen(req, timeout=timeout or cfg.get("ollama_timeout_s", 12.0)) as r:
@@ -444,7 +458,7 @@ class Api:
                 mic = sd.query_devices()[cfg["input_device"]]["name"]
         except Exception:
             mic = "Unavailable"
-        ollama = resolve_ollama_model(cfg) or "not reachable"
+        ollama = rt.get("ollama_model") or resolve_ollama_model(cfg) or "not reachable"
         device = rt.get("whisper_device", "?")
         loaded = "ready" if rt.get("whisper_loaded") else ("loading" if rt else "unknown")
         data = {"enabled": "on" if cfg.get("enabled", True) else "off",

@@ -102,6 +102,25 @@ into the *current directory* — move them into `assets/icon/` if run from
 root), then `cp assets/icon/dictator.ico dashboard/dictator.ico`. Also update
 `main.py`'s `make_icon_image()` stroke color to match if it changed.
 
+## Latency pipeline (audit 2026-09-28 — see audit/STATE.md)
+
+Budget: release -> text typed <=500 ms p50, <=1 s p95. What keeps it there:
+- `Mic` keeps one input stream open (`keep_mic_warm`); opening a stream costs
+  250-700 ms on the Realtek array and clipped first words. 0.3 s pre-roll is
+  prepended on press; audio outside a dictation is discarded, never stored.
+- Whisper loads at app start and stays resident (`stt_idle_unload_min` = 0).
+  A cold CUDA load is 10-70 s; an in-process reload is ~1.3 s.
+- `StreamingSTT` (`streaming`) decodes finished sentences at VAD pauses while
+  you talk (chunks >= 5 s), so release only decodes the tail.
+- `Transcriber.warm_tick` runs an encoder pass every 0.3 s during recording so
+  the laptop GPU leaves its idle clock (first decode 300 ms -> 170 ms).
+- Vocabulary goes to Whisper as `initial_prompt`; `_is_prompt_echo` drops output
+  that just parrots the prompt.
+- Per-dictation stage timings go to `latency.jsonl` in the history dir.
+- Model choice: small.en beat large-v3-turbo, distil-large-v3.5 and medium.en on
+  WER and latency on the clip set (audit/results). Re-run with
+  `python audit/bench.py <label> --model X [--stream --vocab ...]`.
+
 ## Features
 
 - **Hold-to-dictate**: hold the hotkey while speaking, release to type.
