@@ -113,7 +113,8 @@ def _ollama_exe():
     return None
 
 
-def ollama_tags(url, timeout=2.0):
+def ollama_tags(url: str, timeout: float = 2.0) -> list:
+    """Fetch the list of model names currently available in Ollama."""
     with urllib.request.urlopen(url + "/api/tags", timeout=timeout) as r:
         return [m["name"] for m in json.load(r).get("models", [])]
 
@@ -143,7 +144,8 @@ def ensure_ollama_running(url, wait_s=15):
     return False
 
 
-def has_model(names, model):
+def has_model(names: list, model: str) -> bool:
+    """Check if the given model or its latest tag exists in the list of names."""
     return any(n == model or n == model + ":latest" for n in names)
 
 
@@ -187,7 +189,8 @@ def ensure_model(url, model, log=print):
     return model if pull(url, model, log) else None
 
 
-def config_path():
+def config_path() -> str:
+    """Get the absolute path to Dictator's config.json based on OS."""
     if IS_WIN:
         base = os.path.join(os.environ.get("APPDATA", "."), "Dictator")
     elif IS_MAC:
