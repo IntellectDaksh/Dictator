@@ -229,6 +229,7 @@ class Notepad(Target):
 
 
 class Chrome(Target):
+    """Chrome automation target"""
     name = "chrome"
     def open(self):
         page = "data:text/html,<title>E2EPAD</title><textarea autofocus style='width:95vw;height:90vh'></textarea>"
