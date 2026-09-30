@@ -242,6 +242,7 @@ class Chrome(Target):
 
 
 class VSCode(Target):
+    """VSCode automation target"""
     name = "vscode"
     def open(self):
         self.proc = subprocess.Popen([CODE, "--user-data-dir", os.path.join(SCRATCH, "code"),
