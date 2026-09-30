@@ -218,6 +218,7 @@ class Target:
 
 
 class Notepad(Target):
+    """Notepad automation target"""
     name = "notepad"
     def open(self):
         self.f = os.path.join(SCRATCH, "e2e_notepad.txt"); open(self.f, "w").close()
