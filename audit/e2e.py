@@ -274,6 +274,7 @@ class VSCode(Target):
 
 
 class Word(Target):
+    """Word automation target"""
     name = "word"
     def open(self):
         f = os.path.join(SCRATCH, "e2e_word.rtf")
