@@ -40,6 +40,7 @@ def load_wav(p):
 
 
 def main_():
+    """Main entry point"""
     ap = argparse.ArgumentParser()
     ap.add_argument("label")
     ap.add_argument("--model", default="small.en")
