@@ -511,7 +511,7 @@ def tone_for(exe, title, cfg=None):
         return "verbatim"  # code/terminal targets: type exactly what was said
     if exe in CASUAL_EXES:
         return "casual"
-    if exe in FORMAL_EXES or "gmail" in title:
+    if exe in FORMAL_EXES or "gmail" in (title or "").lower():
         return "formal"
     return None
 
