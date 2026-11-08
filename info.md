@@ -135,7 +135,9 @@ Budget: release -> text typed <=500 ms p50, <=1 s p95. What keeps it there:
 - **Language**: `cfg["language"]`, 12 languages + auto-detect, passed to
   faster-whisper.
 - **Local STT**: faster-whisper (base.en / small.en / medium.en), GPU (CUDA,
-  Windows only) if available, CPU fallback everywhere.
+  Windows only) if available, CPU fallback everywhere (falls back to `int8`
+  quantization if CUDA initialization fails or no NVIDIA device is present,
+  keeping CPU inference latency practical).
 - **Local cleanup LLM**: Ollama (`ollama_model`, "auto" picks first available
   from `PREFERRED_MODELS`) strips filler words, resolves self-corrections,
   fixes grammar. Falls back to the raw transcript (optionally
