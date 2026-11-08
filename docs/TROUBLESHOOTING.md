@@ -62,6 +62,7 @@ in `main.py`'s `DEFAULTS` dict; the ones people actually go looking for:
 |---|---|
 | `hotkey_mods` / `hotkey_mode` | Which keys, hold vs. toggle |
 | `model_size` | Whisper model — `base.en` / `small.en` / `medium.en` |
+| `compute_type` | Whisper inference precision — `float16` / `int8` / `auto` |
 | `language` | ISO code or `"auto"` |
 | `history_dir` | Where `history.jsonl` lives — change this via the dashboard, not by hand, if you want the app to notice |
 | `accent_color` / `highlight_color` | `null` = theme default; hex string to override |
